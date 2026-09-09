@@ -15,10 +15,6 @@ use AlanSmodic\AiProviderForUsai\Support\Credentials;
 use WordPress\AiClient\AiClient;
 use WordPress\AiClient\Providers\Http\DTO\ApiKeyRequestAuthentication;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Plugin class.
  *
@@ -104,7 +100,7 @@ class Plugin {
 	public function plugin_action_links( array $links ): array {
 		$settings_link = sprintf(
 			'<a href="%1$s">%2$s</a>',
-			admin_url( 'options-general.php?page=connectors' ),
+			esc_url( admin_url( 'options-general.php?page=connectors' ) ),
 			esc_html__( 'Settings', 'ai-provider-for-usai' )
 		);
 

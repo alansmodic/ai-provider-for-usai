@@ -24,10 +24,6 @@ use WordPress\AiClient\Results\DTO\Embedding;
 use WordPress\AiClient\Results\DTO\EmbeddingResult;
 use WordPress\AiClient\Results\DTO\TokenUsage;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Generates embeddings using USAi's embeddings endpoint.
  *
@@ -53,7 +49,11 @@ class UsaiEmbeddingGenerationModel extends AbstractApiBasedModel implements Embe
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param list<MessagePart> $input The message parts to embed.
+	 * @param array $input The message parts to embed.
+	 * @return EmbeddingResult The embedding result.
+	 *
+	 * @throws InvalidArgumentException If the input is not a non-empty list of text parts.
+	 * @throws ResponseException        If the response contains no usable vectors.
 	 */
 	public function generateEmbeddingResult( array $input ): EmbeddingResult {
 		$request = new Request(
@@ -77,13 +77,13 @@ class UsaiEmbeddingGenerationModel extends AbstractApiBasedModel implements Embe
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param list<MessagePart> $input The message parts to embed.
-	 * @return array<string, mixed> The request body.
+	 * @param array $input The message parts to embed.
+	 * @return array The request body.
 	 *
 	 * @throws InvalidArgumentException If the input is not a non-empty list of text parts.
 	 */
 	private function prepare_params( array $input ): array {
-		if ( ! array_is_list( $input ) || empty( $input ) ) {
+		if ( empty( $input ) || ! self::is_list( $input ) ) {
 			throw new InvalidArgumentException( 'Embedding input must be a non-empty list of message parts.' );
 		}
 
@@ -177,5 +177,32 @@ class UsaiEmbeddingGenerationModel extends AbstractApiBasedModel implements Embe
 			$this->metadata(),
 			$additional_data
 		);
+	}
+
+	/**
+	 * Determines whether an array is a list (consecutive integer keys starting at 0).
+	 *
+	 * `array_is_list()` is PHP 8.1+; WordPress 6.5+ polyfills it, but this package also runs
+	 * as a standalone Composer dependency on PHP 7.4.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param array $value The array to check.
+	 * @return bool True when the array is a list.
+	 */
+	private static function is_list( array $value ): bool {
+		if ( function_exists( 'array_is_list' ) ) {
+			return array_is_list( $value );
+		}
+
+		$expected = 0;
+		foreach ( array_keys( $value ) as $key ) {
+			if ( $key !== $expected ) {
+				return false;
+			}
+			++$expected;
+		}
+
+		return true;
 	}
 }

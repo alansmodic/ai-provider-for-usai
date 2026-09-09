@@ -15,10 +15,6 @@ use WordPress\AiClient\Providers\Http\DTO\Request;
 use WordPress\AiClient\Providers\Http\Enums\HttpMethodEnum;
 use WordPress\AiClient\Providers\OpenAiCompatibleImplementation\AbstractOpenAiCompatibleTextGenerationModel;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Generates text using USAi's chat completions endpoint.
  *
@@ -37,6 +33,12 @@ class UsaiTextGenerationModel extends AbstractOpenAiCompatibleTextGenerationMode
 	 * {@inheritDoc}
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param HttpMethodEnum           $method  HTTP method.
+	 * @param string                   $path    Request path relative to the API root.
+	 * @param array<string, string>    $headers Request headers.
+	 * @param string|array<mixed>|null $data    Request body.
+	 * @return Request The HTTP request.
 	 */
 	protected function createRequest( HttpMethodEnum $method, string $path, array $headers = array(), $data = null ): Request {
 		return new Request(

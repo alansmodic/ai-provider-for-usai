@@ -28,7 +28,10 @@ define( 'USAI_API_KEY', getenv( 'USAI_API_KEY' ) );          // or use Settings 
 ```
 
 There is deliberately **no default base URL**. Without one the provider reports itself unconfigured
-rather than guessing at an endpoint.
+rather than guessing at an endpoint. Only `https://` URLs are accepted.
+
+On WordPress VIP, set `USAI_API_KEY` and `USAI_BASE_URL` with `vip config envvar`; the plugin
+reads them through `vip_get_env_var()` when that helper exists.
 
 ## Usage
 

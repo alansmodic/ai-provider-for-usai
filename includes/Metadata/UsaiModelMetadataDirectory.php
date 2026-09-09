@@ -23,10 +23,6 @@ use WordPress\AiClient\Providers\Models\Enums\CapabilityEnum;
 use WordPress\AiClient\Providers\Models\Enums\OptionEnum;
 use WordPress\AiClient\Providers\OpenAiCompatibleImplementation\AbstractOpenAiCompatibleModelMetadataDirectory;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Discovers the models exposed by the agency's USAi instance.
  *
@@ -51,6 +47,12 @@ class UsaiModelMetadataDirectory extends AbstractOpenAiCompatibleModelMetadataDi
 	 * {@inheritDoc}
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param HttpMethodEnum           $method  HTTP method.
+	 * @param string                   $path    Request path relative to the API root.
+	 * @param array<string, string>    $headers Request headers.
+	 * @param string|array<mixed>|null $data    Request body.
+	 * @return Request The HTTP request.
 	 */
 	protected function createRequest( HttpMethodEnum $method, string $path, array $headers = array(), $data = null ): Request {
 		// Metadata directories carry no RequestOptions; those exist only on models.
@@ -67,7 +69,10 @@ class UsaiModelMetadataDirectory extends AbstractOpenAiCompatibleModelMetadataDi
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return list<ModelMetadata> The model metadata list.
+	 * @param Response $response The HTTP response.
+	 * @return array The model metadata list.
+	 *
+	 * @throws ResponseException If the response does not contain a model list.
 	 */
 	protected function parseResponseToModelMetadataList( Response $response ): array {
 		$data = $response->getData();
@@ -103,10 +108,10 @@ class UsaiModelMetadataDirectory extends AbstractOpenAiCompatibleModelMetadataDi
 	/**
 	 * Builds metadata for a single USAi model.
 	 *
-	 * @since 1.0.0
-	 *
 	 * Embedding models are omitted entirely when the AI Client does not ship the embedding
 	 * contracts, so a capability is never advertised that cannot be served.
+	 *
+	 * @since 1.0.0
 	 *
 	 * @param string $model_id The model ID.
 	 * @return ModelMetadata|null The model metadata, or null when the model should be excluded.
@@ -143,7 +148,7 @@ class UsaiModelMetadataDirectory extends AbstractOpenAiCompatibleModelMetadataDi
 	 *
 	 * @since 1.0.0
 	 *
-	 * @return list<SupportedOption> The supported options.
+	 * @return array The supported options.
 	 */
 	private function text_generation_options(): array {
 		$text_only = array( array( ModalityEnum::text() ) );
@@ -170,9 +175,20 @@ class UsaiModelMetadataDirectory extends AbstractOpenAiCompatibleModelMetadataDi
 			 *
 			 * @since 1.0.0
 			 *
-			 * @param list<SupportedOption> $options The supported options.
+			 * @param array $options The supported options.
 			 */
-			$options = (array) apply_filters( 'ai_provider_for_usai_supported_options', $options );
+			$filtered = apply_filters( 'ai_provider_for_usai_supported_options', $options );
+
+			if ( is_array( $filtered ) ) {
+				$options = array_values(
+					array_filter(
+						$filtered,
+						static function ( $option ): bool {
+							return $option instanceof SupportedOption;
+						}
+					)
+				);
+			}
 		}
 
 		return $options;
