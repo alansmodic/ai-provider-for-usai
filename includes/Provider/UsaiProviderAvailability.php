@@ -13,10 +13,6 @@ namespace AlanSmodic\AiProviderForUsai\Provider;
 use AlanSmodic\AiProviderForUsai\Support\Credentials;
 use WordPress\AiClient\Providers\Contracts\ProviderAvailabilityInterface;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Reports whether the USAi provider is configured.
  *

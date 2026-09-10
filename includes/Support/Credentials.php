@@ -10,10 +10,6 @@ declare( strict_types=1 );
 
 namespace AlanSmodic\AiProviderForUsai\Support;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Resolves the USAi API key and agency endpoint.
  *
@@ -80,22 +76,17 @@ class Credentials {
 	 * @return string The API key, or an empty string when not configured.
 	 */
 	public static function api_key(): string {
-		$env = getenv( self::KEY_CONSTANT );
-		if ( is_string( $env ) && '' !== $env ) {
+		$env = self::env( self::KEY_CONSTANT );
+		if ( '' !== $env ) {
 			return $env;
 		}
 
-		if ( defined( self::KEY_CONSTANT ) && constant( self::KEY_CONSTANT ) ) {
-			return (string) constant( self::KEY_CONSTANT );
+		$constant = self::constant_value( self::KEY_CONSTANT );
+		if ( '' !== $constant ) {
+			return $constant;
 		}
 
-		if ( ! function_exists( 'get_option' ) ) {
-			return '';
-		}
-
-		$option = get_option( self::OPTION_NAME, '' );
-
-		return is_string( $option ) ? $option : '';
+		return self::option_value( self::OPTION_NAME );
 	}
 
 	/**
@@ -105,27 +96,24 @@ class Credentials {
 	 * after signing in, so there is deliberately no default: without an endpoint the provider
 	 * reports itself unconfigured rather than guessing.
 	 *
+	 * Precedence matches the API key: env var, constant, then option.
+	 *
 	 * @since 1.0.0
 	 *
-	 * @return string The base URL without a trailing slash, or an empty string when not set.
+	 * @return string The sanitized HTTPS base URL without a trailing slash, or empty when unset.
 	 */
 	public static function base_url(): string {
-		if ( defined( self::BASE_URL_CONSTANT ) && constant( self::BASE_URL_CONSTANT ) ) {
-			return rtrim( (string) constant( self::BASE_URL_CONSTANT ), '/' );
+		$raw = self::env( self::BASE_URL_CONSTANT );
+
+		if ( '' === $raw ) {
+			$raw = self::constant_value( self::BASE_URL_CONSTANT );
 		}
 
-		$env = getenv( self::BASE_URL_CONSTANT );
-		if ( is_string( $env ) && '' !== $env ) {
-			return rtrim( $env, '/' );
+		if ( '' === $raw ) {
+			$raw = self::option_value( self::BASE_URL_OPTION );
 		}
 
-		if ( ! function_exists( 'get_option' ) ) {
-			return '';
-		}
-
-		$option = get_option( self::BASE_URL_OPTION, '' );
-
-		return is_string( $option ) ? rtrim( $option, '/' ) : '';
+		return self::sanitize_base_url( $raw );
 	}
 
 	/**
@@ -134,9 +122,116 @@ class Credentials {
 	 * @since 1.0.0
 	 *
 	 * @param string $path Path relative to the API root, such as `chat/completions`.
-	 * @return string The absolute URL.
+	 * @return string The absolute URL, or an empty string when the base URL is not configured.
 	 */
 	public static function url( string $path = '' ): string {
-		return self::base_url() . self::API_PATH . ltrim( $path, '/' );
+		$base = self::base_url();
+		if ( '' === $base ) {
+			return '';
+		}
+
+		return $base . self::API_PATH . ltrim( $path, '/' );
+	}
+
+	/**
+	 * Reads an environment variable, preferring VIP's helper when available.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $name Environment variable name.
+	 * @return string The value, or an empty string when unset.
+	 */
+	private static function env( string $name ): string {
+		if ( function_exists( 'vip_get_env_var' ) ) {
+			$value = vip_get_env_var( $name, '' );
+			return is_string( $value ) ? $value : '';
+		}
+
+		$value = getenv( $name );
+
+		return is_string( $value ) ? $value : '';
+	}
+
+	/**
+	 * Reads a PHP constant when it is defined and non-empty.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $name Constant name.
+	 * @return string The value, or an empty string when unset.
+	 */
+	private static function constant_value( string $name ): string {
+		if ( ! defined( $name ) ) {
+			return '';
+		}
+
+		$value = constant( $name );
+
+		return is_scalar( $value ) ? (string) $value : '';
+	}
+
+	/**
+	 * Reads a WordPress option as a string.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $option Option name.
+	 * @return string The value, or an empty string when unset or unavailable.
+	 */
+	private static function option_value( string $option ): string {
+		if ( ! function_exists( 'get_option' ) ) {
+			return '';
+		}
+
+		$value = get_option( $option, '' );
+
+		return is_string( $value ) ? $value : '';
+	}
+
+	/**
+	 * Sanitizes a configured USAi endpoint to an HTTPS URL with no credentials.
+	 *
+	 * Agency endpoints may live on private networks, so private-IP rejection is not applied.
+	 * Only HTTPS is accepted.
+	 *
+	 * @since 1.0.1
+	 *
+	 * @param string $url Candidate base URL.
+	 * @return string The sanitized URL without a trailing slash, or empty when invalid.
+	 */
+	private static function sanitize_base_url( string $url ): string {
+		$url = trim( $url );
+		if ( '' === $url ) {
+			return '';
+		}
+
+		if ( function_exists( 'esc_url_raw' ) ) {
+			$url = esc_url_raw( $url, array( 'https' ) );
+		} elseif ( 0 !== stripos( $url, 'https://' ) ) {
+			return '';
+		}
+
+		if ( '' === $url ) {
+			return '';
+		}
+
+		if ( function_exists( 'wp_parse_url' ) ) {
+			$parts = wp_parse_url( $url );
+		} else {
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback when WordPress is not loaded.
+			$parts = parse_url( $url );
+		}
+		if ( ! is_array( $parts ) ) {
+			return '';
+		}
+
+		$scheme = isset( $parts['scheme'] ) ? strtolower( (string) $parts['scheme'] ) : '';
+		$host   = isset( $parts['host'] ) ? (string) $parts['host'] : '';
+
+		if ( 'https' !== $scheme || '' === $host || isset( $parts['user'] ) || isset( $parts['pass'] ) ) {
+			return '';
+		}
+
+		return rtrim( $url, '/' );
 	}
 }

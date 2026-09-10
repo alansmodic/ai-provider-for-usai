@@ -25,10 +25,6 @@ use WordPress\AiClient\Providers\Http\Enums\RequestAuthenticationMethod;
 use WordPress\AiClient\Providers\Models\Contracts\ModelInterface;
 use WordPress\AiClient\Providers\Models\DTO\ModelMetadata;
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
 /**
  * Class for the USAi provider.
  *
@@ -109,6 +105,12 @@ class UsaiProvider extends AbstractApiProvider {
 	 * {@inheritDoc}
 	 *
 	 * @since 1.0.0
+	 *
+	 * @param ModelMetadata    $model_metadata    Metadata for the selected model.
+	 * @param ProviderMetadata $provider_metadata Metadata for this provider.
+	 * @return ModelInterface The model implementation.
+	 *
+	 * @throws RuntimeException If the model capabilities are not supported.
 	 */
 	protected static function createModel(
 		ModelMetadata $model_metadata,
@@ -125,9 +127,20 @@ class UsaiProvider extends AbstractApiProvider {
 			}
 		}
 
-		throw new RuntimeException(
-			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, not output.
-			'Unsupported USAi model capabilities for model: ' . $model_metadata->getId()
-		);
+		if ( function_exists( '__' ) ) {
+			$message = sprintf(
+				/* translators: %s: Model ID */
+				__( 'Unsupported USAi model capabilities for model: %s', 'ai-provider-for-usai' ),
+				$model_metadata->getId()
+			);
+		} else {
+			$message = sprintf(
+				'Unsupported USAi model capabilities for model: %s',
+				$model_metadata->getId()
+			);
+		}
+
+		// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Exception message, not output.
+		throw new RuntimeException( $message );
 	}
 }

@@ -4,7 +4,7 @@ Tags: ai, usai, gsa, fedramp, govtech
 Requires at least: 7.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -44,6 +44,11 @@ advertised by default, so automatic model selection will not route tool-using re
 the `ai_provider_for_usai_supported_options` filter to enable it once confirmed.
 
 == Changelog ==
+
+= 1.0.1 =
+* Align PHPCS with WordPress VIP Go plus WordPress Core/Extra/Docs.
+* Sanitize HTTPS base URLs, prefer VIP env vars, and notice a missing AI Client.
+* Escape the plugin Settings link and add an uninstall handler.
 
 = 1.0.0 =
 * Initial release.
