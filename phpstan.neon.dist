@@ -5,6 +5,7 @@ parameters:
 		- plugin.php
 		- uninstall.php
 	scanDirectories:
+		- vendor/wordpress/php-ai-client/src
 		- ../../../wp-includes/php-ai-client/src
 	bootstrapFiles:
 		- plugin.php

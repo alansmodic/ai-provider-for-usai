@@ -45,6 +45,9 @@ the `ai_provider_for_usai_supported_options` filter to enable it once confirmed.
 
 == Changelog ==
 
+= Unreleased =
+* PHPUnit suite with mocked HTTP for credentials, availability, models, and embeddings.
+
 = 1.0.1 =
 * Align PHPCS with WordPress VIP Go plus WordPress Core/Extra/Docs.
 * Sanitize HTTPS base URLs, prefer VIP env vars, and notice a missing AI Client.
