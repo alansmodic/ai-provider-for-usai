@@ -17,7 +17,9 @@
         "phpstan/extension-installer": "^1.3",
         "phpstan/phpstan": "^2.1.22",
         "phpstan/phpstan-deprecation-rules": "^2.0.3",
+        "phpunit/phpunit": "^9.6",
         "szepeviktor/phpstan-wordpress": "^2.0.2",
+        "wordpress/php-ai-client": "^1.4",
         "wp-coding-standards/wpcs": "^3.4.1"
     },
     "suggest": {
@@ -26,9 +28,11 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "autoload": { "psr-4": { "AlanSmodic\\AiProviderForUsai\\": "includes/" } },
+    "autoload-dev": { "psr-4": { "AlanSmodic\\AiProviderForUsai\\Tests\\": "tests/" } },
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true,
             "phpstan/extension-installer": true
         },
         "optimize-autoloader": true,
@@ -39,6 +43,7 @@
         "lint": [ "@phpcs", "@phpstan" ],
         "phpcbf": "phpcbf --standard=phpcs.xml.dist",
         "phpcs": "phpcs --standard=phpcs.xml.dist",
-        "phpstan": "phpstan analyse --memory-limit=1G"
+        "phpstan": "phpstan analyse --memory-limit=1G",
+        "test": "phpunit --configuration phpunit.xml.dist"
     }
 }

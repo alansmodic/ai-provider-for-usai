@@ -33,6 +33,15 @@ rather than guessing at an endpoint. Only `https://` URLs are accepted.
 On WordPress VIP, set `USAI_API_KEY` and `USAI_BASE_URL` with `vip config envvar`; the plugin
 reads them through `vip_get_env_var()` when that helper exists.
 
+## Tests
+
+```bash
+composer install
+composer test
+```
+
+PHPUnit talks to a mock HTTP transporter. Nothing is sent to a live USAi endpoint.
+
 ## Usage
 
 No USAi-specific code is required:

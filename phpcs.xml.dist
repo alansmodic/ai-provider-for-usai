@@ -5,6 +5,7 @@
 	<file>./includes/</file>
 	<file>./plugin.php</file>
 	<file>./uninstall.php</file>
+	<file>./tests/</file>
 
 	<exclude-pattern>/vendor/*</exclude-pattern>
 	<exclude-pattern>/node_modules/*</exclude-pattern>
@@ -36,8 +37,23 @@
 		<exclude name="WordPress.Files.FileName"/>
 		<exclude name="Generic.Commenting.DocComment.MissingShort"/>
 	</rule>
-	<rule ref="WordPress-Docs"/>
+	<rule ref="WordPress-Docs">
+		<exclude-pattern>/tests/</exclude-pattern>
+	</rule>
 	<rule ref="PHPCompatibilityWP"/>
+
+	<rule ref="WordPress.PHP.DiscouragedPHPFunctions.runtime_configuration_putenv">
+		<exclude-pattern>/tests/</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.json_encode_json_encode">
+		<exclude-pattern>/tests/</exclude-pattern>
+	</rule>
+	<rule ref="WordPressVIPMinimum.Files.IncludingFile">
+		<exclude-pattern>/tests/</exclude-pattern>
+	</rule>
+	<rule ref="WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fwrite">
+		<exclude-pattern>/tests/</exclude-pattern>
+	</rule>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
@@ -48,6 +64,7 @@
 	</rule>
 
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<exclude-pattern>/tests/</exclude-pattern>
 		<properties>
 			<property name="prefixes" type="array">
 				<element value="AI_PROVIDER_FOR_USAI"/>
@@ -60,5 +77,6 @@
 	<!-- SDK contracts require camelCase method names. -->
 	<rule ref="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid">
 		<exclude-pattern>/includes/*</exclude-pattern>
+		<exclude-pattern>/tests/</exclude-pattern>
 	</rule>
 </ruleset>

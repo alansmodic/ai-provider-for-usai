@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+- PHPUnit suite covering credential resolution, availability, model discovery, and
+  embeddings against a mock HTTP transporter.
+
 ## [1.0.1]
 
 ### Changed
